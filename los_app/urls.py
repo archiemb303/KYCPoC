@@ -14,12 +14,20 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from los_app.apis.karza.pan_verification.views_pan_verification import PANAuthentication
-from django.conf.urls import url
-
+from los_app.apis.karza.bank_verification.views_bank_verification import BankVerificationAPI
+from django.urls import path
+from los_app.apis.cashfree.aadhar_ocr.views_aadhaar_ocr import AadhaarOcr
+from los_app.apis.cashfree.bank_verification.views_bank_verification import BankVerification
 
 
 
 urlpatterns = [
-    url(r'^pan_authentication/$', PANAuthentication.as_view(), name='karza_pan_authentication'),
+    # Karza apis
+    path('pan_authentication/', PANAuthentication.as_view(), name='karza_pan_authentication'),
+    path('karza_bank_verification/', BankVerificationAPI.as_view(), name='karza_bank_verification'),
+
+    # Cashfree apis 
+    path('aadhaar_ocr_verification/', AadhaarOcr.as_view(), name='aadhaar_ocr_verification'),
+    path('bank_verification/', BankVerification.as_view(), name='bank_verification'),
 
 ]

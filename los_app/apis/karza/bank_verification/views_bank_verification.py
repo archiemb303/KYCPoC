@@ -5,11 +5,17 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from los_app.apis.karza.creds import get_cred
-from los_app.apis.karza.pan_verification.documentation_pan_verification import *
+from los_app.apis.karza.bank_verification.documentation_bank_verification import *
 from drf_yasg.utils import swagger_auto_schema
 
 from los_app.apis.karza.creds import KarzaKeys
-class PANAuthentication(APIView):
+
+
+# Swagger
+from drf_yasg.utils import swagger_auto_schema
+
+# @permission_classes([AllowAny])
+class BankVerificationAPI(APIView):
 
     @swagger_auto_schema(
         tags=["Karza"],
@@ -22,7 +28,6 @@ class PANAuthentication(APIView):
         operation_description=OPERATIONS_DESCRIPTION,
         responses=RESPONSE_DESCRIPTION
     )
- 
 
     def post(self, request):
         """
@@ -31,17 +36,22 @@ class PANAuthentication(APIView):
         :return:
         """
         input_json = request.data
-        output_json = views_pan_authentication_json(request, input_json)
+        output_json = views_bank_verification_json(request, input_json)
         return Response(output_json)
 
 
-def views_pan_authentication_json(request, input_params):
+def views_bank_verification_json(request, input_params):
     try:
         input_json, output_list = input_params, []
-        api_name_var = "Karza PAN Validation"
-        endpoint_url_var = "/v2/pan"
+        cred = get_cred()
+        input_json['token_secret_key_1'] = cred['token_secret_key_1']
+        input_json['token_secret_key_2'] = cred['token_secret_key_2']
+       
+  
+        api_name_var = "Bank AC Verification"
+        endpoint_url_var = "/v2/bankacc"
         keys_obj = KarzaKeys()
-
+        # access_token = generate_access_token(key_gen_var)
         # For every API Calling style initiate the params accordingly
         third_party_response = dict(zip(["APIName", "endpoint_url", "Request", "Response", "CallTime"],
                                         [api_name_var, endpoint_url_var, None, None, None]))
@@ -51,10 +61,9 @@ def views_pan_authentication_json(request, input_params):
         # Call the third party API here
         call_params = dict(zip(["api_endpoint_url", "payload"],
                                [endpoint_url_var, None]))
-        call_params['payload'] = dict(zip(["consent", "pan"],
-                                          [input_json['pan_yes'], input_json['pan_number']]))
+        call_params['payload'] = dict(zip(["consent", "ifsc", "accountNumber"],
+                                          [input_json['consent'], input_json['ifsc'], input_json['accountNumber']]))
         third_party_call_result = keys_obj.make_api_call(call_params)
-        print(third_party_call_result)
 
         third_party_response['Request'] = third_party_call_result['request_details']
         third_party_response['Response'] = third_party_call_result['response_details']
@@ -65,19 +74,15 @@ def views_pan_authentication_json(request, input_params):
                                                     [timestamp_one, timestamp_two,
                                                      (timestamp_two-timestamp_one).total_seconds()]))
         output_list.append(third_party_response)
-
         # Saving the results in the db
         third_party_response['CallDuration'] = third_party_response['CallTime']['time_diff']
         third_party_response['CallTime'] = str(third_party_response['CallTime']['timestamp_one'])
-        insertion_params = dict(zip(['workflow_id', 'details'],
-                                    [None, json.dumps(third_party_response)]))
-        if 'workflow_id' in input_json:
-            insertion_params['workflow_id'] = input_json['workflow_id']
-            request.session['workflow_id'] = input_json['workflow_id']
-       
+
+     
+
         return output_list
 
     except Exception as ex:
         output_list=[dict(zip(["APIName", "endpoint_url", "Request", "Response", "CallTime"],
-                              ["Karza PAN Validation method 1", "/v2/pan", None, f"Exception Encountered: {ex}", None]))]
+                              ["Bank AC Verification", "/v2/bankacc", None, f"Exception Encountered: {ex}", None]))]
         return output_list

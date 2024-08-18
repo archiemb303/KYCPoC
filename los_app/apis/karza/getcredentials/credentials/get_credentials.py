@@ -49,9 +49,8 @@ def get_cred():
         :return:
         """
     try:
-        yml = yaml_parser(os.path.abspath('getcredentials/credentials/credential.yaml'))
-        print(yml)
-        p = os.path.abspath('getcredentials/credentials/schema_credentials.json')
+        yml = yaml_parser(os.path.abspath('los_app/apis/karza/getcredentials/credentials/credential.yaml'))
+        p = os.path.abspath('los_app/apis/karza/getcredentials/credentials/schema_credentials.json')
         schema_validation(yml, p)
         return yml
     except Exception as ex:
