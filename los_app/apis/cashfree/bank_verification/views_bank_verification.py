@@ -9,7 +9,6 @@ from los_app.apis.cashfree.bank_verification.documentation_bank_verification imp
 import base64
 import random
 import requests
-from los_app.apis.cashfree.utility import create_token
 from django.conf import settings
 
 cashfree_client_id = settings.CASHFREE_CLIENT_ID
