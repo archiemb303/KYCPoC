@@ -10,8 +10,10 @@ import base64
 import random
 import requests
 from los_app.apis.cashfree.utility import create_token
+from django.conf import settings
 
-
+cashfree_client_id = settings.CASHFREE_CLIENT_ID
+cashfree_client_secret = settings.CASHFREE_CLIENT_SECRET
 
 class BankVerification(APIView):
 
@@ -58,8 +60,8 @@ def Views_bank_verification_json(request, input_params):
         headers = {
             "accept": "application/json",
             "content-type": "application/json",
-            "x-client-id": "CF10053789CR060QNPU07S7391HJSG",
-            "x-client-secret": "cfsk_ma_test_929e495f9601df900f1c6a7f7ea3a1cb_ac558e12"
+            "x-client-id": cashfree_client_id,
+            "x-client-secret":  cashfree_client_secret
         }
 
         response = requests.post(url, json=payload, headers=headers)

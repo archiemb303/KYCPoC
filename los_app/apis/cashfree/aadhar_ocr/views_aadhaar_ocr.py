@@ -11,6 +11,10 @@ import random
 import requests
 import tempfile
 
+from django.conf import settings
+
+cashfree_client_id = settings.CASHFREE_CLIENT_ID
+cashfree_client_secret = settings.CASHFREE_CLIENT_SECRET
 
 
 class AadhaarOcr(APIView):
@@ -64,8 +68,8 @@ def views_aadhar_orc_json(request, input_params):
         # Headers
         headers = {
             "accept": "application/json",
-            "x-client-id": "CF10053789CR060QNPU07S7391HJSG",
-            "x-client-secret": "cfsk_ma_test_929e495f9601df900f1c6a7f7ea3a1cb_ac558e12"
+            "x-client-id": cashfree_client_id,
+            "x-client-secret":  cashfree_client_secret
         }
 
         # Sending the request
