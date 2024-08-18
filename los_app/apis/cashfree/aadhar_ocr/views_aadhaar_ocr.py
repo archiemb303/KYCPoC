@@ -5,11 +5,12 @@ from rest_framework.response import Response
 import random
 import requests
 from drf_yasg.utils import swagger_auto_schema
-from los_app.apis.cashfree.aadhar_ocr.documentation_aadhaar_ocr import *
+# from los_app.apis.cashfree.aadhar_ocr.documentation_aadhaar_ocr import aadhaar_verification_schema
 import base64
 import random
 import requests
 import tempfile
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiExample
 
 from django.conf import settings
 
@@ -19,17 +20,58 @@ cashfree_client_secret = settings.CASHFREE_CLIENT_SECRET
 
 class AadhaarOcr(APIView):
 
-    @swagger_auto_schema(
-        tags=["Cashfree"],
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            required=REQUIRED_LIST,
-            properties=INPUT_PROPERTIES_DESCRIPTION
-        ),
-        operation_description=OPERATIONS_DESCRIPTION,
-        responses=RESPONSE_DESCRIPTION
+   
+    @extend_schema(
+        summary="Verify Aadhaar Card",
+        description="This endpoint verifies the Aadhaar card details using the front image.",
+        request={
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'aadhaar_front_image': {
+                        'type': 'string',
+                        'description': 'Base64 encoded front image of the Aadhaar card',
+                        'example': 'aadhaar_front_image_base64_string'
+                    }
+                },
+                'required': ['aadhaar_front_image']
+            }
+        },
+        responses={
+            200: {
+                'type': 'object',
+                'properties': {
+                    'name': {'type': 'string', 'example': 'JOHN DOE'},
+                    'yob': {'type': 'string', 'example': '1997'},
+                    'gender': {'type': 'string', 'example': 'Male'},
+                    'uid': {'type': 'string', 'example': 'XXXX-XXXX-3717'},
+                    'valid': {'type': 'boolean', 'example': True},
+                    'status': {'type': 'string', 'example': 'VALID'},
+                    'reference_id': {'type': 'string', 'example': '11749'},
+                    'verification_id': {'type': 'string', 'example': '397204'},
+                    'message': {'type': 'string', 'example': 'Aadhaar card is valid'},
+                },
+                'description': 'Output if API successfully verifies the Aadhaar card'
+            },
+            401: {
+                'type': 'object',
+                'properties': {
+                    'Status': {'type': 'integer', 'example': 401},
+                    'Message': {'type': 'string', 'example': 'Authentication failed'},
+                },
+                'description': 'Output if authentication fails'
+            },
+            404: {
+                'type': 'object',
+                'properties': {
+                    'Status': {'type': 'integer', 'example': 404},
+                    'Message': {'type': 'string', 'example': 'Aadhaar not found'},
+                },
+                'description': 'Output if Aadhaar verification fails'
+            }
+        },
+        tags=["Cashfree"]
     )
-
     def post(self, request):
         """
         This function will call the 3rd party api,
