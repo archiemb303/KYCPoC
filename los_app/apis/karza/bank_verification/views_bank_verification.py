@@ -84,7 +84,7 @@ class BankVerificationAPI(APIView):
                 'description': 'Output if account verification fails'
             }
         },
-        tags=["Bank Account Verification"]
+        tags=["Karza"]
     )
 
     def post(self, request):
