@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'lms_app',
     'rest_framework',
     'drf_yasg',
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
