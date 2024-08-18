@@ -5,24 +5,69 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from los_app.apis.karza.creds import get_cred
-from los_app.apis.karza.pan_verification.documentation_pan_verification import *
-from drf_yasg.utils import swagger_auto_schema
-
+# from los_app.apis.karza.pan_verification.documentation_pan_verification import *
+from drf_spectacular.utils import extend_schema
 from los_app.apis.karza.creds import KarzaKeys
 class PANAuthentication(APIView):
 
-    @swagger_auto_schema(
-        tags=["Karza"],
-        manual_parameters=[openapi.Parameter('access_token', openapi.IN_HEADER, description="Access token for authentication", type=openapi.TYPE_STRING)],
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            required=REQUIRED_LIST,
-            properties=INPUT_PROPERTIES_DESCRIPTION
+  
+    
+    @extend_schema(
+        summary="Validate PAN Number",
+        description=(
+            "This function will call a 3rd party API to validate the PAN number and return the verification status.\n"
+            "**endpoint url:** /v2/pan/"
         ),
-        operation_description=OPERATIONS_DESCRIPTION,
-        responses=RESPONSE_DESCRIPTION
+        request={
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'pan_yes': {
+                        'type': 'string',
+                        'description': 'User consent for PAN verification',
+                        'example': 'Y'
+                    },
+                    'pan_number': {
+                        'type': 'string',
+                        'description': 'PAN number to be verified',
+                        'example': 'ABCDE1234F'
+                    }
+                },
+                'required': ['pan_yes', 'pan_number']
+            }
+        },
+        responses={
+            200: {
+                'type': 'object',
+                'properties': {
+                    'APIName': {'type': 'string', 'example': 'Karza PAN Validation', 'description': 'Name of the API'},
+                    'endpoint_url': {'type': 'string', 'example': '/v2/pan', 'description': 'Endpoint URL'},
+                    'Request': {'type': 'string', 'example': '{"consent": "Y", "pan": "ABCDE1234F"}', 'description': 'Request sent to the API'},
+                    'Response': {'type': 'string', 'example': '{"result":{"pan":"ABCDE1234F","name":"John Doe","panStatus":"Valid","dob":"1980-01-01","message":"Verification Successful","status_code":"101"}}', 'description': 'Response from the API'},
+                    'CallTime': {'type': 'string', 'example': '2024-08-18 12:34:56.789012', 'description': 'Time of the API call'},
+                    'CallDuration': {'type': 'number', 'example': 1.234567, 'description': 'Duration of the API call in seconds'}
+                },
+                'description': 'Output if API successfully verifies the PAN number'
+            },
+            401: {
+                'type': 'object',
+                'properties': {
+                    'Status': {'type': 'integer', 'example': 401, 'description': 'Status code of API output'},
+                    'Message': {'type': 'string', 'example': 'Authentication failed', 'description': 'Description of API output status'}
+                },
+                'description': 'Output if authentication fails'
+            },
+            404: {
+                'type': 'object',
+                'properties': {
+                    'Status': {'type': 'integer', 'example': 404, 'description': 'Status code of API output'},
+                    'Message': {'type': 'string', 'example': 'PAN not found', 'description': 'Description of API output status'}
+                },
+                'description': 'Output if PAN verification fails'
+            }
+        },
+        tags=["Karza"]
     )
- 
 
     def post(self, request):
         """
